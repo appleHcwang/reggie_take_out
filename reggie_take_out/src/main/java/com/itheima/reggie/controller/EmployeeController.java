@@ -3,6 +3,7 @@ package com.itheima.reggie.controller;
 import com.alibaba.druid.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.itheima.reggie.common.BaseContext;
 import com.itheima.reggie.common.R;
 import com.itheima.reggie.entity.Employee;
 import com.itheima.reggie.service.EmployeeService;
@@ -54,13 +55,16 @@ public class EmployeeController {
         if(emp.getStatus() == 0){
             return R.error("账号已禁用");
         }
-
-           request.getSession().setAttribute("employee",emp.getId());
+        /**
+         * 登录状态
+         */
+        BaseContext.setCurrentId(emp.getId());
+        request.getSession().setAttribute("employee",emp.getId());
         return R.success(emp);
     }
 
     /**
-     * 员工推出
+     * 员工退出
      */
     @PostMapping("/logout")
         public R<String> logout(HttpServletRequest request){
@@ -125,6 +129,26 @@ public class EmployeeController {
            return R.success(employee);
        }
        return R.error("没有对应员工信息");
+     }
+
+    /**
+     * 修改员工信息
+     * @return
+     */
+    @PutMapping
+    public R<String>update(HttpServletRequest request, @RequestBody Employee employee) {
+     log.info("提交内容"+(employee.toString()));
+     Long empId = (Long) request.getSession().getAttribute("employee");
+     employee.setUpdateTime(LocalDateTime.now());
+     employee.setUpdateUser(empId);
+     employeeService.updateById(employee);
+     return  R.success("修改成功");
+    }
+
+    @GetMapping("/hello")
+    public  String hello() {
+         log.info("hello world");
+         return "hello world";
      }
 
 }
